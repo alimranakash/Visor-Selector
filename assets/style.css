@@ -1,0 +1,639 @@
+#visor-selector {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Montserrat;
+    text-align: left;
+}
+
+#visor-selector h2.selector-title,
+#visor-selector .selector-title {
+    font-size: 18px;
+    font-weight: 600;
+    font-family: 'Montserrat', Sans-Serif;
+    color: #0CA5E2;
+    margin: 20px 0 15px 0;
+    padding: 0;
+    text-align: left;
+}
+
+.make-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    justify-content: flex-start;
+    margin: 0 0 20px 0;
+    padding: 0px;
+}
+
+.make-button {
+    all: unset; /* ← Reset all browser button styles */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    padding: 6px;
+    border-radius: 6px;
+    background-color: transparent;
+    transition: border 0.2s ease;
+    cursor: pointer;
+    margin: 5px;
+}
+
+button.make-button {padding: 5px !important;}
+}
+
+.make-button:hover {
+    border: 1px solid #0CA5E2;
+    background-color: transparent !important;
+}
+
+.make-button img {
+    display: block;
+    width: 80px;
+    height: auto;
+    object-fit: contain;
+}
+
+.make-button.active,
+.make-button.selected {
+    border: 1px solid #0CA5E2;
+    background-color: transparent !important;
+}
+
+.model-select-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin: 0 0 20px 0;
+    padding: 0;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 518px;
+}
+
+#model-select {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 0px;
+    border: 1px solid #ccc;
+    background: white;
+    appearance: none;
+}
+
+/*#model-unknown {
+    background-color: #e0e0e0;
+    border: 1px solid #bbb;
+    padding: 10px 16px;
+    font-size: 12px;
+    border-radius: 0px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}*/
+
+#model-unknown,
+#add-to-cart {
+    background-color: #0F2946;
+    border: 1px solid grey;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    padding: 10px 16px;
+    font-size: 12px;
+    border-radius: 0px;
+	letter-spacing: 1px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+#model-unknown:hover,
+#add-to-cart:hover:not(:disabled) {
+    background-color: #0CA5E2; /* slightly lighter hover effect */
+}
+
+#add-to-cart:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #0F2946;
+}
+
+#make-select {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-start; 
+    margin-bottom: 0px;
+}
+
+.pack-wrap {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin: 0 0 20px 0;
+    padding: 0;
+}
+
+.pack-wrap label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 160px;
+    height: 40px;
+    border: 1px solid grey;
+    background-color: #0F2946;
+    color: white;
+    border-radius: 0px;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+
+.pack-wrap input[type="radio"] {
+    display: none; /* hide actual radio */
+}
+
+/* Hover state */
+.pack-wrap label:hover {
+    border-color: #0CA5E2;
+}
+
+/* Active (checked) state */
+#visor-selector .pack-wrap input[type="radio"]:checked + label {
+    background-color: #0CA5E2 !important;
+    border-color: #0CA5E2 !important;
+    color: white !important;
+}
+
+.pack-wrap label.selected {
+    background-color: #0CA5E2 !important;
+    border-color: #0CA5E2 !important;
+    color: white !important;
+}
+
+/* Battery colour buttons */
+.battery-wrap {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin: 0 0 20px 0;
+    padding: 0;
+}
+
+.battery-wrap label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 160px;
+    height: 40px;
+    border: 1px solid grey;
+    background-color: #0F2946;
+    color: white;
+    border-radius: 0px;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.battery-wrap input[type="radio"] {
+    display: none;
+}
+
+/* Hover */
+.battery-wrap label:hover {
+    border-color: #0CA5E2;
+}
+
+/* Active (via JS) */
+.battery-wrap label.selected {
+    background-color: #0CA5E2 !important;
+    border-color: #0CA5E2 !important;
+    color: white !important;
+}
+
+.extras-wrap {
+/*	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	padding-left: 0;
+	margin-left: 0;*/
+	padding-left: 0;
+	padding-right: 0;
+	width: 100%;
+}
+
+.extras-wrap label {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 160px;
+	height: 40px;
+	border: 1px solid grey;
+	background-color: #0F2946;
+	color: white;
+	border-radius: 0;
+	cursor: pointer;
+	font-family: 'Montserrat', sans-serif;
+	font-weight: 500;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	transition: background-color 0.2s ease, border-color 0.2s ease;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.extras-wrap input[type="checkbox"] {
+        display: none;
+}
+
+.extras-wrap label:hover {
+	background-color: #0CA5E2;
+	border-color: #0CA5E2;
+}
+
+.extras-wrap input[type="checkbox"]:checked + label {
+        background-color: #0CA5E2 !important;
+        border-color: #0CA5E2 !important;
+        color: white;
+}
+
+.extras-wrap label.active {
+    background-color: #0CA5E2 !important;
+    border-color: #0CA5E2 !important;
+    color: white;
+}
+
+.extras-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0 0 20px 0;
+    padding: 0;
+}
+
+.extras-options label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 160px;
+    box-sizing: border-box;
+    height: 40px;
+    border: 1px solid grey;
+    background-color: #0F2946;
+    color: white;
+    border-radius: 0;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.extras-options input[type="checkbox"] {
+    display: none;
+}
+
+.extras-options label:hover {
+    border-color: #0CA5E2;
+}
+
+.extras-options input[type="checkbox"]:checked + label,
+.extras-options label.active {
+    background-color: #0CA5E2 !important;
+    border-color: #0CA5E2 !important;
+    color: white;
+}
+
+/* Action buttons styling */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin: 20px 0 0 0;
+    padding: 0;
+}
+
+.reset-button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    padding: 0;
+    font-size: 12px !important;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    text-transform: lowercase;
+    text-decoration: underline;
+	letter-spacing: 0px !important;
+}
+
+.clear-button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    padding: 0;
+    font-size: 12px !important;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    text-transform: lowercase;
+    text-decoration: underline;
+    margin-top: 8px;
+    display: block;
+	letter-spacing: 0px !important;
+}
+
+.reset-button:hover,
+.clear-button:hover {
+    color: #0CA5E2;
+    background: transparent;
+}
+div#visor-selector p {
+    margin: 0;
+}
+
+.extras-controls {
+    margin-top: 12px;
+}
+
+/* Price display styling */
+#visor-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    margin: 20px 0;
+    padding: 0;
+    background: none;
+    border: none;
+    text-align: left;
+    line-height: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+#visor-price small {
+    display: none;
+}
+
+/* Make button active state */
+.make-button.active {
+    border-color: #0CA5E2 !important;
+    /*background: #f0f8ff !important;*/
+    box-shadow: 0 0 8px rgba(12, 165, 226, 0.3);
+}
+
+/* Cart extras display styles */
+.woocommerce-cart-form .hv-extras-info {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    line-height: 1.4;
+}
+
+.woocommerce-cart-form .hv-extras-info .hv-extra-item {
+    color: #0073aa;
+    font-weight: bold;
+    display: block;
+    margin: 2px 0;
+}
+
+.woocommerce-cart-form .hv-extras-info .hv-extra-item:before {
+    content: "✓ ";
+    color: #46b450;
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+    #visor-selector {
+        padding: 10px;
+        max-width: 100%;
+    }
+
+    .make-grid {
+        justify-content: center;
+        gap: 5px;
+        margin-bottom: 20px;
+    }
+
+    .make-button {
+        padding: 6px;
+        min-height: 70px;
+        margin: 2px;
+        min-width: 70px;
+    }
+
+    .make-button img {
+        /*width: 50px;*/
+        height: auto;
+    }
+
+    .model-select-row {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    #model-select {
+        min-width: auto;
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    #model-unknown {
+        width: 100%;
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+
+    .pack-wrap {
+        flex-direction: row;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .pack-wrap label {
+        flex: 1;
+        min-width: 120px;
+        height: 50px;
+        font-size: 14px;
+    }
+
+    .battery-wrap {
+        flex-direction: row;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .battery-wrap label {
+        flex: 1;
+        min-width: 100px;
+        height: 45px;
+        font-size: 12px;
+    }
+
+    .extras-options {
+        flex-direction: row;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .extras-options label {
+        flex: 1;
+        min-width: 120px;
+        height: 45px;
+        font-size: 12px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #add-to-cart {
+        width: 100%;
+        padding: 15px;
+        font-size: 14px;
+    }
+
+    .reset-button,
+    .clear-button {
+        width: auto;
+        padding: 0;
+        font-size: 12px;
+    }
+
+    #visor-price {
+        font-size: 18px;
+        margin: 15px 0;
+        padding: 0;
+    }
+
+    .selector-title {
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+}
+
+/* Extra small devices (phones, 480px and down) */
+@media (max-width: 480px) {
+    .make-grid {
+        gap: 3px;
+        justify-content: center;
+    }
+
+    .make-button {
+        padding: 4px !important;
+        min-height: 60px;
+        min-width: 60px;
+        margin: 1px;
+    }
+
+    .make-button img {
+        /*width: 40px;*/
+        height: auto;
+    }
+
+    #visor-price {
+        font-size: 16px;
+        padding: 0;
+        margin: 10px 0;
+    }
+
+    .selector-title {
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    .pack-wrap label,
+    .battery-wrap label,
+    .extras-options label {
+        height: 40px;
+        font-size: 11px;
+        min-width: 90px;
+    }
+
+    #add-to-cart,
+    .reset-button,
+    .clear-button {
+        padding: 18px;
+        font-size: 16px;
+        min-height: 50px;
+    }
+}
+
+/* Inline Message Display */
+.visor-message {
+    margin-top: 15px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    text-align: center;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.visor-message.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.visor-message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.visor-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.visor-message.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Mobile responsive message */
+@media (max-width: 768px) {
+    .visor-message {
+        font-size: 13px;
+        padding: 10px 12px;
+        margin-top: 12px;
+    }
+}
