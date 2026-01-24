@@ -202,6 +202,23 @@ function hv_settings_init() {
         'hv_pricing_section'
     );
 
+    add_settings_field(
+        'extra_insert_enabled',
+        __('Enable Extra Insert Option', 'hv'),
+        'hv_extra_insert_enabled_render',
+        'hv_settings',
+        'hv_pricing_section'
+    );
+
+    // 🔹 NEW: Extra Battery Product selector
+    add_settings_field(
+        'extra_battery_product_id',
+        __('Extra Battery Product', 'hv'),
+        'hv_extra_battery_product_render',
+        'hv_settings',
+        'hv_pricing_section'
+    );
+
     // Add general settings section
     add_settings_section(
         'hv_general_section',
@@ -218,6 +235,37 @@ function hv_settings_init() {
         'hv_general_section'
     );
 }
+
+function hv_extra_battery_product_render() {
+
+    $settings = get_option('hv_settings');
+    $selected = isset($settings['extra_battery_product_id'])
+        ? intval($settings['extra_battery_product_id'])
+        : '';
+
+    $products = wc_get_products([
+        'limit'  => -1,
+        'status' => 'publish',
+    ]);
+    ?>
+
+    <select name="hv_settings[extra_battery_product_id]" style="min-width:300px;">
+        <option value="">-- Select Battery Product --</option>
+        <?php foreach ($products as $product): ?>
+            <option value="<?php echo esc_attr($product->get_id()); ?>"
+                <?php selected($selected, $product->get_id()); ?>>
+                <?php echo esc_html($product->get_name()); ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+
+    <p class="description">
+        If no make/model match is found, this product will be added as fallback.
+    </p>
+
+    <?php
+}
+
 
 function hv_pricing_section_callback() {
     echo __('Configure pricing for extra items and options.', 'hv');
@@ -426,6 +474,11 @@ function hv_sanitize_settings($input) {
     // Sanitize extra insert enabled checkbox
     $sanitized['extra_insert_enabled'] = isset($input['extra_insert_enabled']) ? '1' : '0';
 
+    // ✅ ADD THIS
+    if (isset($input['extra_battery_product_id'])) {
+        $sanitized['extra_battery_product_id'] = intval($input['extra_battery_product_id']);
+    }
+
     // Sanitize menu location
     if (isset($input['menu_location'])) {
         $allowed_locations = ['woocommerce', 'main_menu'];
@@ -484,6 +537,7 @@ function hv_get_insert_product_price($make, $model) {
     );
 
     $query = new WP_Query($args);
+
     $price = 0;
 
     if ($query->have_posts()) {
@@ -509,32 +563,115 @@ function hv_get_insert_product_price($make, $model) {
     return $price;
 }
 
+// Function 1: Battery product ID খুঁজে বের করা (Admin setting থেকে)
+function hv_get_battery_product_id($color = '') {
+
+    $settings = get_option('hv_settings', []);
+
+    if (!empty($settings['extra_battery_product_id'])) {
+        return intval($settings['extra_battery_product_id']);
+    }
+
+    return 0;
+}
+
+// Function 2: Insert product ID খুঁজে বের করা
+function hv_get_insert_product_id($make, $model) {
+
+    // Cache key
+    $cache_key = 'hv_insert_product_id_' . sanitize_title($make . '_' . $model);
+    $cached_id = wp_cache_get($cache_key, 'visor_selector');
+
+    if ($cached_id !== false) {
+        return intval($cached_id);
+    }
+
+    // Query for insert product with specific attributes
+    $args = array(
+        'post_type'      => 'product',
+        'post_status'    => 'publish',
+        'posts_per_page' => 1,
+        'meta_query'     => array(
+            array(
+                'key'     => '_stock_status',
+                'value'   => 'instock',
+                'compare' => '='
+            )
+        ),
+        'tax_query' => array(
+            'relation' => 'AND',
+            array(
+                'taxonomy' => 'pa_helmet_make',
+                'field'    => 'slug',
+                'terms'    => sanitize_title($make),
+            ),
+            array(
+                'taxonomy' => 'pa_helmet_model',
+                'field'    => 'slug',
+                'terms'    => sanitize_title($model),
+            ),
+            array(
+                'taxonomy' => 'pa_pack_type',
+                'field'    => 'slug',
+                'terms'    => 'insert-only',
+            )
+        )
+    );
+
+    $query = new WP_Query($args);
+    $product_id = 0;
+
+    if ($query->have_posts()) {
+        $product_id = intval($query->posts[0]->ID);
+    }
+
+    wp_reset_postdata();
+
+    // Cache for 1 hour
+    wp_cache_set($cache_key, $product_id, 'visor_selector', 3600);
+
+    return $product_id;
+}
+
+
 // Get extras pricing dynamically
 function hv_get_extras_pricing($make = '', $model = '') {
+
     $settings = hv_get_settings();
-    $pricing = [];
+    $pricing  = [];
 
-    // Add extra battery price (fixed pricing from settings)
-    $battery_price = !empty($settings['extra_battery_price']) ? $settings['extra_battery_price'] : '134.99';
-    $pricing['extra-battery'] = floatval($battery_price);
+    /**
+     * 🔋 Extra Battery Price
+     * Admin-selected battery product থেকে price নেওয়া হবে
+     */
+    $battery_product_id = hv_get_battery_product_id();
 
-    // Add extra insert price (dynamic pricing based on product lookup)
+    if ($battery_product_id) {
+        $battery_product = wc_get_product($battery_product_id);
+        $pricing['extra-battery'] = $battery_product
+            ? floatval($battery_product->get_price())
+            : 0;
+    } else {
+        $pricing['extra-battery'] = 0;
+    }
+
+    /**
+     * 🧩 Extra Insert Price
+     * Make/Model থাকলে dynamic product lookup
+     * না থাকলে admin fallback price
+     */
     if (!empty($make) && !empty($model)) {
         $pricing['extra-insert'] = hv_get_insert_product_price($make, $model);
     } else {
-        // Fallback to settings if make/model not provided
-        $insert_price = !empty($settings['extra_insert_price']) ? $settings['extra_insert_price'] : '194.99';
+        $insert_price = !empty($settings['extra_insert_price'])
+            ? $settings['extra_insert_price']
+            : '194.99';
+
         $pricing['extra-insert'] = floatval($insert_price);
     }
 
     return $pricing;
 }
-
-
-
-
-
-
 
 
 add_action('init', function () {
@@ -655,16 +792,57 @@ function hv_handle_add_to_cart() {
     }
 
     // Add main product to cart
+    // $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, 0, [], $cart_item_data);
+
+    // if ($cart_item_key) {
+    //     wp_send_json_success([
+    //         'message' => 'Product added to cart successfully!',
+    //         'cart_url' => wc_get_cart_url(),
+    //         'cart_count' => WC()->cart->get_cart_contents_count()
+    //     ]);
+    // } else {
+    //     wp_send_json_error('Failed to add product to cart');
+    // }
+
+    // Add main product to cart
     $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, 0, [], $cart_item_data);
 
     if ($cart_item_key) {
+        // ✅ NEW CODE: Add extras as separate products
+        if (!empty($_POST['extras']) && is_array($_POST['extras'])) {
+            foreach ($_POST['extras'] as $extra) {
+                if ($extra === 'extra-battery') {
+                    $battery_color = sanitize_text_field($_POST['battery_color']);
+                    $battery_product_id = hv_get_battery_product_id($battery_color);
+                    
+                    if ($battery_product_id) {
+                        // Add battery as separate product
+                        WC()->cart->add_to_cart($battery_product_id, 1, 0, [], [
+                            'hv_related_to' => $product_id, // Track which main product this belongs to
+                            'hv_is_extra' => true
+                        ]);
+                    }
+                }
+                
+                if ($extra === 'extra-insert') {
+                    $make = sanitize_text_field($_POST['make']);
+                    $model = sanitize_text_field($_POST['model']);
+                    $insert_product_id = hv_get_insert_product_id($make, $model);
+                    
+                    if ($insert_product_id) {
+                        // Add insert as separate product
+                        WC()->cart->add_to_cart($insert_product_id, 1, 0, [], [
+                            'hv_related_to' => $product_id,
+                            'hv_is_extra' => true
+                        ]);
+                    }
+                }
+            }
+        }
+        
         wp_send_json_success([
             'message' => 'Product added to cart successfully!',
-            'cart_url' => wc_get_cart_url(),
-            'cart_count' => WC()->cart->get_cart_contents_count()
         ]);
-    } else {
-        wp_send_json_error('Failed to add product to cart');
     }
 }
 
@@ -768,6 +946,17 @@ function hv_display_cart_item_data($item_data, $cart_item) {
         }
     }
 
+    // Display extras - এখন শুধু reference দেখাবে
+    if (!empty($cart_item['hv_is_extra']) && $cart_item['hv_is_extra']) {
+        if (!empty($cart_item['hv_related_to'])) {
+            $main_product = wc_get_product($cart_item['hv_related_to']);
+            $item_data[] = [
+                'key'   => __('Related to', 'hv'),
+                'value' => $main_product->get_name(),
+            ];
+        }
+    }
+
     return $item_data;
 }
 
@@ -822,6 +1011,16 @@ add_action('woocommerce_checkout_create_order_line_item', function($item, $cart_
             }
         }
     }
+
+    if (!empty($values['hv_is_extra'])) {
+        $item->add_meta_data('_hv_is_extra', 'yes', true);
+    }
+    
+    if (!empty($values['hv_related_to'])) {
+        $main_product = wc_get_product($values['hv_related_to']);
+        $item->add_meta_data(__('Related to', 'hv'), $main_product->get_name());
+    }
+
 }, 10, 4);
 
 // Backup method: Also handle via WooCommerce filter for form submissions
@@ -856,87 +1055,87 @@ add_filter('woocommerce_add_cart_item_data', function ($cart_item_data, $product
 }, 10, 2);
 
 // Save cart item data to order items
-add_action('woocommerce_checkout_create_order_line_item', function($item, $cart_item_key, $values, $order) {
-    // Save configuration
-    if (!empty($values['hv_configuration'])) {
-        foreach ($values['hv_configuration'] as $key => $value) {
-            $item->add_meta_data('hv_' . $key, $value);
-        }
-    }
+// add_action('woocommerce_checkout_create_order_line_item', function($item, $cart_item_key, $values, $order) {
+//     // Save configuration
+//     if (!empty($values['hv_configuration'])) {
+//         foreach ($values['hv_configuration'] as $key => $value) {
+//             $item->add_meta_data('hv_' . $key, $value);
+//         }
+//     }
 
-    // Save battery color
-    if (!empty($values['hv_battery_color'])) {
-        $item->add_meta_data('hv_battery_color', $values['hv_battery_color']);
-    }
+//     // Save battery color
+//     if (!empty($values['hv_battery_color'])) {
+//         $item->add_meta_data('hv_battery_color', $values['hv_battery_color']);
+//     }
 
-    // Save extras
-    if (!empty($values['hv_extras']) && is_array($values['hv_extras'])) {
-        foreach ($values['hv_extras'] as $extra) {
-            if ($extra === 'extra-battery') {
-                $item->add_meta_data('Extra Battery', 'Yes');
-            } elseif ($extra === 'extra-insert') {
-                $item->add_meta_data('Extra Insert', 'Yes');
-            }
-        }
-    }
-}, 10, 4);
+//     // Save extras
+//     if (!empty($values['hv_extras']) && is_array($values['hv_extras'])) {
+//         foreach ($values['hv_extras'] as $extra) {
+//             if ($extra === 'extra-battery') {
+//                 $item->add_meta_data('Extra Battery', 'Yes');
+//             } elseif ($extra === 'extra-insert') {
+//                 $item->add_meta_data('Extra Insert', 'Yes');
+//             }
+//         }
+//     }
+// }, 10, 4);
 
 // Adjust price when extras are chosen
-add_action('woocommerce_before_calculate_totals', function ($cart) {
-    // Skip if in admin but not during AJAX
-    if (is_admin() && !wp_doing_ajax()) {
-        return;
-    }
+// add_action('woocommerce_before_calculate_totals', function ($cart) {
+//     // Skip if in admin but not during AJAX
+//     if (is_admin() && !wp_doing_ajax()) {
+//         return;
+//     }
 
-    // Prevent infinite loops
-    if (did_action('woocommerce_before_calculate_totals') >= 2) {
-        return;
-    }
+//     // Prevent infinite loops
+//     if (did_action('woocommerce_before_calculate_totals') >= 2) {
+//         return;
+//     }
 
-    // Skip if cart is empty
-    if ($cart->is_empty()) {
-        return;
-    }
+//     // Skip if cart is empty
+//     if ($cart->is_empty()) {
+//         return;
+//     }
 
-    // Get cart contents
-    $cart_contents = $cart->get_cart();
+//     // Get cart contents
+//     $cart_contents = $cart->get_cart();
 
-    foreach ($cart_contents as $cart_item_key => $cart_item) {
-        // Skip if no extras
-        if (empty($cart_item['hv_extras']) || !is_array($cart_item['hv_extras'])) {
-            continue;
-        }
+//     foreach ($cart_contents as $cart_item_key => $cart_item) {
+//         // Skip if no extras
+//         if (empty($cart_item['hv_extras']) || !is_array($cart_item['hv_extras'])) {
+//             continue;
+//         }
 
-        // Get make and model from cart item configuration for dynamic pricing
-        $make = '';
-        $model = '';
-        if (!empty($cart_item['hv_configuration'])) {
-            $make = $cart_item['hv_configuration']['make'] ?? '';
-            $model = $cart_item['hv_configuration']['model'] ?? '';
-        }
+//         // Get make and model from cart item configuration for dynamic pricing
+//         $make = '';
+//         $model = '';
+//         if (!empty($cart_item['hv_configuration'])) {
+//             $make = $cart_item['hv_configuration']['make'] ?? '';
+//             $model = $cart_item['hv_configuration']['model'] ?? '';
+//         }
 
-        // Get extras pricing with dynamic insert pricing
-        $extras_pricing = hv_get_extras_pricing($make, $model);
+//         // Get extras pricing with dynamic insert pricing
+//         $extras_pricing = hv_get_extras_pricing($make, $model);
 
-        // Calculate total extra cost
-        $extra_total = 0;
-        foreach ($cart_item['hv_extras'] as $extra) {
-            if (isset($extras_pricing[$extra])) {
-                $extra_total += (float) $extras_pricing[$extra];
-            }
-        }
+//         // Calculate total extra cost
+//         $extra_total = 0;
+//         foreach ($cart_item['hv_extras'] as $extra) {
+//             if (isset($extras_pricing[$extra])) {
+//                 $extra_total += (float) $extras_pricing[$extra];
+//             }
+//         }
 
-        // Apply extra cost to product price
-        if ($extra_total > 0) {
-            $product = $cart_item['data'];
-            $original_price = (float) $product->get_regular_price();
-            $new_price = $original_price + $extra_total;
+//         // Apply extra cost to product price
+//         if ($extra_total > 0) {
+//             $product = $cart_item['data'];
+//             $original_price = (float) $product->get_regular_price();
+//             $new_price = $original_price + $extra_total;
 
-            // Set the new price
-            $product->set_price($new_price);
-        }
-    }
-}, 20, 1);
+//             // Set the new price
+//             $product->set_price($new_price);
+//         }
+//     }
+// }, 20, 1);
 
 // Capture custom helmet text in cart item data
 add_filter('woocommerce_add_cart_item_data', function ($cart_item_data, $product_id) {
