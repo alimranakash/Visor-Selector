@@ -2,7 +2,7 @@
 /*
 Plugin Name:    Visor Selector
 Description:    A WooCommerce product selector for helmets, integrated with Elementor.
-Version:        2.06
+Version:        3.0.0
 Author:         Heated Visor Dev
 */
 
