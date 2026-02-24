@@ -694,14 +694,15 @@ add_action('init', function () {
 
         // Pass data to JS
         wp_localize_script('visor-selector', 'visorData', [
-            'products' => $product_map,
-            'logos'    => $logos,
-            'checkout_url' => wc_get_checkout_url(),
-            'cart_url' => wc_get_cart_url(),
-            'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('hv_add_to_cart'),
-            'extras_pricing' => hv_get_extras_pricing(), // Only battery pricing, insert is dynamic
-            'settings' => hv_get_settings()
+            'products'          => $product_map,
+            'logos'             => $logos,
+            'checkout_url'      => wc_get_checkout_url(),
+            'cart_url'          => wc_get_cart_url(),
+            'ajax_url'          => admin_url('admin-ajax.php'),
+            'nonce'             => wp_create_nonce('hv_add_to_cart'),
+            'extras_pricing'    => hv_get_extras_pricing(), // Only battery pricing, insert is dynamic
+            'settings'          => hv_get_settings(),
+            'currency_symbol'   => get_woocommerce_currency_symbol(),
         ]);
 
         // Output selector container
@@ -720,7 +721,7 @@ add_action('init', function () {
 
         echo '<div id="extras-wrap" style="display:none; margin-top: 20px;"><h2 class="selector-title">OPTIONAL EXTRAS</h2><div class="extras-options"><input type="checkbox" name="extras" id="extras-battery" value="extra-battery"><label for="extras-battery">Extra Battery</label><input type="checkbox" name="extras" id="extras-insert" value="extra-insert"><label for="extras-insert">Extra Insert</label><button type="button" id="clear-extras" class="clear-button">clear</button></div></div>';
 
-        echo '<div id="visor-price">YOUR PRICE: £</div>';
+        echo '<div id="visor-price">YOUR PRICE: ' . get_woocommerce_currency_symbol() . '</div>';
         echo '<div class="action-buttons">';
         echo '<button id="add-to-cart" disabled>Add to Cart</button>';
         echo '<button type="button" id="reset-selection" class="reset-button">Reset Selection</button>';

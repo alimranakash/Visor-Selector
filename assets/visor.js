@@ -1,9 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    const data = window.visorData || {};
-    const products = data.products || [];
-    const logos = data.logos || {};
-    const settings = data.settings || {};
+    const data      = window.visorData || {};
+    const products  = data.products || [];
+    const currency_symbol  = data.currency_symbol || '$';
+    const logos     = data.logos || {};
+    const settings  = data.settings || {};
 
     const makeSelect = document.getElementById("make-select");
     const modelSelect = document.getElementById("model-select");
@@ -131,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         selectedModel = null;
         selectedPack = null;
-        priceDisplay.innerHTML = 'YOUR PRICE: £';
+        priceDisplay.innerHTML = 'YOUR PRICE: ' + currency_symbol;
         addToCartBtn.disabled = true;
         addToCartBtn.textContent = "SELECT OPTIONS";
         if (batteryWrap) batteryWrap.style.display = "none";
@@ -158,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
         modelSelect.disabled = false;
         selectedModel = null;
         selectedPack = null;
-        priceDisplay.innerHTML = 'YOUR PRICE: £';
+        priceDisplay.innerHTML = 'YOUR PRICE: ' + currency_symbol;
         addToCartBtn.disabled = true;
         addToCartBtn.textContent = "SELECT OPTIONS";
         if (batteryWrap) batteryWrap.style.display = "none";
@@ -368,7 +369,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     // Update the price display
                     console.log("Updating price display to:", displayPrice);
-                    priceDisplay.innerHTML = `YOUR PRICE £${displayPrice.toFixed(2)}`;
+                    priceDisplay.innerHTML = `${currency_symbol}${displayPrice.toFixed(2)}`;
 
                     addToCartBtn.disabled = false;
                     addToCartBtn.textContent = "ADD TO CART";
@@ -379,7 +380,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 console.log("Updating price display (no extras) to:", finalPrice);
-                priceDisplay.innerHTML = `YOUR PRICE £${finalPrice.toFixed(2)}`;
+                priceDisplay.innerHTML = `${currency_symbol}${finalPrice.toFixed(2)}`;
                 addToCartBtn.disabled = false;
                 addToCartBtn.textContent = "ADD TO CART";
             } else {
@@ -390,7 +391,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (extrasWrap) extrasWrap.style.display = "none";
             }
         } else {
-            priceDisplay.innerHTML = 'YOUR PRICE: £';
+            priceDisplay.innerHTML = 'YOUR PRICE: ' + currency_symbol;
             addToCartBtn.disabled = true;
             addToCartBtn.textContent = "SELECT OPTIONS";
         }
@@ -597,7 +598,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (extrasWrap) extrasWrap.style.display = "none";
 
             // Reset price and button
-            priceDisplay.innerHTML = 'YOUR PRICE £XXX.XX';
+            priceDisplay.innerHTML = 'YOUR PRICE $XXX.XX';
             addToCartBtn.disabled = true;
             addToCartBtn.textContent = "SELECT OPTIONS";
         });
